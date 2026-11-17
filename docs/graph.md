@@ -1,0 +1,23 @@
+# AI 岗位图谱 MVP · 6 节点
+
+```mermaid
+flowchart TB
+    subgraph A["A 线 · Agent 架构师"]
+        A1["A1 任务编排与工具调用"]
+        A2["A2 可靠性设计与评估 ◆共享"]
+        A3["A3 多 Agent 协议设计（可选）"]
+    end
+    subgraph S["S 线 · 数据科学家"]
+        S1["S1 RAG 与 LLM 应用评估 ◆共享"]
+        S2["S2 实验设计与因果推断"]
+        S3["S3 业务决策建模与沟通"]
+    end
+    A1 -->|strong| A2
+    A1 -->|strong| A3
+    A2 -->|moderate| A3
+    S2 -->|moderate| S3
+    S1 -.->|M1| A2
+    A2 -.->|M2| S2
+    A1 -.->|M3| S1
+    S3 -.->|M4 弱| A3
+```

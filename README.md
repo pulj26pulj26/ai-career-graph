@@ -5,7 +5,27 @@
 
 ## 架构
 
-![架构图](graph/Agent%20RAG%20LLM%20Competency%20Framework-2026-11-17-013726.png)
+```mermaid
+flowchart LR
+    User["用户"] --> App["RAG 应用 / 工作流<br/>Dify 1.10.1"]
+
+    subgraph CP["控制面 · 腾讯云 Lighthouse"]
+        App
+        KB["知识库（混合检索）"]
+    end
+
+    subgraph DP["数据面 · AutoDL"]
+        Ollama["Ollama"]
+        Qwen["Qwen2.5-7B-Instruct<br/>Q4_K_M"]
+        BGE["bge-m3"]
+    end
+
+    App -->|"写入 / 召回"| KB
+    KB -->|"Embedding"| BGE
+    App -->|"OpenAI 兼容 API"| Ollama
+    Ollama --> Qwen
+    Ollama --> BGE
+```
 
 控制面（腾讯云 Lighthouse / Dify）与数据面（AutoDL / Ollama）
 分离；LLM 为 Qwen2.5-7B-Instruct Q4_K_M，Embedding 为 bge-m3。
@@ -29,6 +49,35 @@
 - [graph/edges.yaml](graph/edges.yaml) — 4 条迁移边（M1—M4）
 - [docs/graph.md](docs/graph.md) — Mermaid 可视化
 - 校验：`python scripts/validate.py`
+
+```mermaid
+flowchart TB
+    subgraph A["A 线 · Agent 架构师"]
+        A1["A1 任务编排与工具调用"]
+        A2["A2 可靠性设计与评估 ◆共享"]
+        A3["A3 多 Agent 协议设计（可选）"]
+    end
+    subgraph S["S 线 · 数据科学家"]
+        S1["S1 RAG 与 LLM 应用评估 ◆共享"]
+        S2["S2 实验设计与因果推断"]
+        S3["S3 业务决策建模与沟通"]
+    end
+    A1 -->|strong| A2
+    A1 -->|strong| A3
+    A2 -->|moderate| A3
+    S2 -->|moderate| S3
+    S1 -.->|M1| A2
+    A2 -.->|M2| S2
+    A1 -.->|M3| S1
+    S3 -.->|M4 弱| A3
+```
+
+<details>
+<summary>能力框架全景图（工具导出版，点击展开）</summary>
+
+![Agent RAG LLM Competency Framework](graph/Agent%20RAG%20LLM%20Competency%20Framework-2026-11-17-013726.png)
+
+</details>
 
 ## 决策记录（ADR）
 

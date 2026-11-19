@@ -10,10 +10,12 @@
 | 部署架构决策 | ADR-001 / ADR-003 | docs/decisions/ |
 | 模型量化判断与排错 | ADR-002 / ADR-004 | docs/decisions/ |
 | Agent 编排 | 待 A1 产出 | A1-agent-orchestration/ |
-| RAG 评估 | 待 S1 产出 | S1-rag-evaluation/ |
+| RAG 评估（S1） | 召回调优记录：纯向量失败样本 → 混合检索区分度改善 → Rerank 部署判断 | docs/s1-retrieval-tuning-log.md |
+
 
 ## 关键决策时间线
 
+- 2026-11-19：S1 召回调优完成（纯向量→混合检索→Rerank 判断）。
 - 2026-11-18：图谱 MVP 定义完成（6 节点、4 迁移边、A2/S1 共享）。
 - 2026-11-18：识别 AutoDL 不支持 docker-in-docker，Dify 云版 +
   AutoDL Ollama 拆分（ADR-001）。

@@ -1,0 +1,567 @@
+app:
+  description: 汽车音响芯片 Datasheet 参数抽取流水线：PDF 提取 → 章节截取 → Qwen2.5 few-shot JSON 抽取 →
+    三重校验 → 失败原因驱动的差异化重试。16 字段结构化输出，失败显式落盘待人工复核，全程可复现可评估。
+  icon: 🤖
+  icon_background: '#D1E9FF'
+  mode: workflow
+  name: AutoDS-ParamMiner
+  use_icon_as_answer_icon: false
+dependencies:
+- current_identifier: null
+  type: marketplace
+  value:
+    marketplace_plugin_unique_identifier: langgenius/ollama:1.0.3@1086758302d98263d5b7881de8ba95fc219351fdf97831d18a7807378674d203
+    version: null
+kind: app
+version: 0.5.0
+workflow:
+  conversation_variables: []
+  environment_variables: []
+  features:
+    file_upload:
+      allowed_file_extensions:
+      - .JPG
+      - .JPEG
+      - .PNG
+      - .GIF
+      - .WEBP
+      - .SVG
+      allowed_file_types:
+      - image
+      allowed_file_upload_methods:
+      - local_file
+      - remote_url
+      enabled: false
+      fileUploadConfig:
+        audio_file_size_limit: 50
+        batch_count_limit: 5
+        file_size_limit: 15
+        image_file_size_limit: 10
+        video_file_size_limit: 100
+        workflow_file_upload_limit: 10
+      image:
+        enabled: false
+        number_limits: 3
+        transfer_methods:
+        - local_file
+        - remote_url
+      number_limits: 3
+    opening_statement: ''
+    retriever_resource:
+      enabled: true
+    sensitive_word_avoidance:
+      enabled: false
+    speech_to_text:
+      enabled: false
+    suggested_questions: []
+    suggested_questions_after_answer:
+      enabled: false
+    text_to_speech:
+      enabled: false
+      language: ''
+      voice: ''
+  graph:
+    edges:
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: start
+        targetType: document-extractor
+      id: 1795089416887-source-1795089475431-target
+      selected: false
+      source: '1795089416887'
+      sourceHandle: source
+      target: '1795089475431'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: document-extractor
+        targetType: code
+      id: 1795089475431-source-1795089504376-target
+      selected: false
+      source: '1795089475431'
+      sourceHandle: source
+      target: '1795089504376'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: code
+        targetType: llm
+      id: 1795089504376--1795089927128-target
+      selected: false
+      source: '1795089504376'
+      sourceHandle: source
+      target: '1795089927128'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: llm
+        targetType: code
+      id: 1795089927128-source-1795121751944-target
+      selected: false
+      source: '1795089927128'
+      sourceHandle: source
+      target: '1795121751944'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: code
+        targetType: code
+      id: 1795121751944-source-1795221206927-target
+      source: '1795121751944'
+      sourceHandle: source
+      target: '1795221206927'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInLoop: false
+        sourceType: code
+        targetType: end
+      id: 1795221206927-source-1795123274220-target
+      source: '1795221206927'
+      sourceHandle: source
+      target: '1795123274220'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    nodes:
+    - data:
+        selected: false
+        title: 用户输入
+        type: start
+        variables:
+        - allowed_file_extensions: []
+          allowed_file_types:
+          - document
+          allowed_file_upload_methods:
+          - local_file
+          default: ''
+          hint: ''
+          label: Datasheet 文件
+          max_length: 48
+          options: []
+          placeholder: ''
+          required: true
+          type: file
+          variable: datasheet
+        - default: ''
+          hint: ''
+          label: 芯片型号
+          max_length: 48
+          options: []
+          placeholder: ''
+          required: true
+          type: text-input
+          variable: part_number
+      height: 134
+      id: '1795089416887'
+      position:
+        x: 80
+        y: 282
+      positionAbsolute:
+        x: 80
+        y: 282
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        is_array_file: false
+        selected: false
+        title: 文档提取器
+        type: document-extractor
+        variable_selector:
+        - '1795089416887'
+        - datasheet
+      height: 104
+      id: '1795089475431'
+      position:
+        x: 73.23514887914257
+        y: -95.3792624810479
+      positionAbsolute:
+        x: 73.23514887914257
+        y: -95.3792624810479
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        code: "import re\n\nMAX_CHARS = 36000\n\ndef main(text: str) -> dict:\n  \
+          \  raw = (text or \"\")\n    total_chars = len(raw)\n    dotted = re.compile(r'(?:\\\
+          .\\s*){3,}')\n    cleaned = \"\\n\".join(ln for ln in raw.splitlines() if\
+          \ not dotted.search(ln))\n\n    def find_heading(title):\n        # 第一遍：严格模式——标题在行首（可带编号，如\
+          \ \"2 Pin description\"）\n        pat = r'(?im)^\\s*(?:\\d+(?:\\.\\d+)?\\\
+          s+)?' + re.escape(title) + r'\\b[^\\n]*$'\n        m = re.search(pat, cleaned)\n\
+          \        if m:\n            return m.start()\n        # 第二遍（兜底）：双栏 PDF 合并行——标题出现在行尾\n\
+          \        # （如 \"■ Output short circuit ... the        Description\"）\n \
+          \       pat2 = r'(?im)^[^\\n]*?(?:^|\\s)(\\d+(?:\\.\\d+)?\\s+)?' + re.escape(title)\
+          \ + r'\\s*$'\n        m2 = re.search(pat2, cleaned)\n        return m2.start()\
+          \ if m2 else -1\n\n    def slice_between(start_title, end_titles):\n   \
+          \     s = find_heading(start_title)\n        if s < 0:\n            return\
+          \ None\n        if isinstance(end_titles, str):\n            end_titles\
+          \ = [end_titles]\n        e = len(cleaned)\n        for t in end_titles:\n\
+          \            p = find_heading(t)\n            if p > s:\n              \
+          \  e = min(e, p)\n        return cleaned[s:e].strip()\n\n    d = find_heading(\"\
+          Description\")\n    seg_features = cleaned[:d].strip() if d > 0 else slice_between(\"\
+          Features\", [\"Description\", \"Pin description\"])\n    seg_desc = slice_between(\"\
+          Description\", [\"Pin description\", \"Electrical specifications\"])\n \
+          \   seg_pins = slice_between(\"Pin description\", [\"Electrical specifications\"\
+          , \"Electrical characteristics\"])\n    # 电气规格段：结束标题兜底，曲线图区（无抽取价值的大段噪声）不收\n\
+          \    seg_elec = slice_between(\"Electrical specifications\",\n         \
+          \                    [\"Input configuration\", \"Electrical characteristic\
+          \ curves\",\n                              \"Application hints\", \"Package\
+          \ information\"])\n    if seg_elec is None:\n        seg_elec = slice_between(\"\
+          Electrical characteristics\",\n                                 [\"Electrical\
+          \ characteristic curves\", \"Application hints\", \"Package information\"\
+          ])\n    seg_input = slice_between(\"Input configuration\", \"Mixing\")\n\
+          \    o = find_heading(\"Order codes\")\n    if o < 0:\n        m = re.search(r'(?i)order\\\
+          s*codes', cleaned)\n        o = m.start() if m else -1\n    seg_order =\
+          \ cleaned[o:].strip() if o >= 0 else None\n\n    labels = [(\"=== ELECTRICAL\
+          \ SPECIFICATIONS ===\", seg_elec),  # 优先拼入，保证关键表格不被截\n              (\"\
+          === FEATURES ===\", seg_features),\n              (\"=== DESCRIPTION ===\"\
+          , seg_desc),\n              (\"=== PIN DESCRIPTION ===\", seg_pins),\n \
+          \             (\"=== INPUT CONFIGURATION ===\", seg_input),\n          \
+          \    (\"=== ORDER CODES ===\", seg_order)]\n    found = [seg for _, seg\
+          \ in labels if seg]\n\n    if len(found) <= 1:\n        body = cleaned[:MAX_CHARS]\n\
+          \        coverage_pct = 100.0 if total_chars > 0 else 0.0\n    else:\n \
+          \       body = \"\\n\\n\".join(name + \"\\n\" + seg for name, seg in labels\
+          \ if seg)\n        if len(body) > MAX_CHARS:\n            body = body[:MAX_CHARS]\n\
+          \        coverage_pct = round(len(body) / total_chars * 100, 1) if total_chars\
+          \ else 0.0\n\n    return {\"selected_text\": body, \"total_chars\": total_chars,\
+          \ \"coverage_pct\": coverage_pct}\n"
+        code_language: python3
+        outputs:
+          coverage_pct:
+            children: null
+            type: number
+          selected_text:
+            children: null
+            type: string
+          total_chars:
+            children: null
+            type: number
+        selected: false
+        title: Code①
+        type: code
+        variables:
+        - value_selector:
+          - '1795089475431'
+          - text
+          value_type: string
+          variable: text
+      height: 51
+      id: '1795089504376'
+      position:
+        x: 396.34727545150895
+        y: 334.78031643091583
+      positionAbsolute:
+        x: 396.34727545150895
+        y: 334.78031643091583
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        context:
+          enabled: false
+          variable_selector: []
+        model:
+          completion_params:
+            format: json
+            num_ctx: 12288
+            temperature: 0.05
+          mode: chat
+          name: qwen2.5-7b:q4
+          provider: langgenius/ollama/ollama
+        prompt_template:
+        - id: 5c4f6467-bf1a-4278-8e88-1294f1cd40e1
+          role: system
+          text: "你是汽车音响芯片 Datasheet 参数抽取专家。你的唯一任务：从给定的 datasheet 文本片段中，抽取指定型号芯片的 16\
+            \ 个字段，输出纯 JSON。\n输出规则（必须严格遵守）\n0.【最高优先级，违反则整体输出无效】aec_q100_grade 字段：所给文本中若不存在字面\n\
+            \"Grade 1\"、\"Grade 2\" 或 \"Grade 3\" 字样，该字段必须为 null。\"AEC-Q100 qualified\"\
+            、\n\"automotive qualified\" 等描述均不含等级信息；严禁根据工作温度范围、器件家族或你的知识推断等级。\n0b.【最高优先级】channels：若所给文本含\
+            \ === PIN DESCRIPTION === 段，必须统计其中\nI/O 列为 O（输出）的引脚——即名称以 OUT 开头的脚（OUTLF/OUTRF/OUTLR/OUTRR/\n\
+            OUTL2/OUTR2 等），将数量填入 channels；有该段却填 null，或将输入引脚/输入配置\n计入 channels，视同违反规则\
+            \ 0，整体输出无效。\n示例：引脚表中出现 OUTLF、OUTRF、OUTLR、OUTRR、OUTL2、OUTR2 六个 OUT 开头的\n\
+            引脚 → channels=6。（此示例仅为格式示意，实际数量以你文本中的 OUT 引脚数为准）\n数 PIN DESCRIPTION 段中去差分符号（+/−）后不同的\
+            \ OUT 基名数量（OUT1+/OUT1− 算 1 个基名 OUT1；OUTLF/OUTRF… 各算一个）\n\n\n0c.【最高优先级】extraction_notes：必须逐一列出所给文本中实际出现的全部章节标记\n\
+            （=== FEATURES ===、=== PIN DESCRIPTION ===、=== ELECTRICAL SPECIFICATIONS\
+            \ ===、\n=== INPUT CONFIGURATION ===、=== ORDER CODES === 中出现的那些）；漏报或虚报，视同违反规则\
+            \ 0。\n\n0d.【最高优先级】supply_voltage_v：只允许取 Electrical characteristics 表中\"\
+            Supply voltage (Vs)\" 行的数值；若该行不存在而 Description 文字给出工作电压范围（如 \"Operating\
+            \ supply voltage 8 to 18 V\"），取文字值。绝对最大额定值表（Absolute maximum ratings）中的任何数值严禁用于本字段。若电气特性表无\
+            \ Supply voltage (Vs) 行且 Description 无 ‘operating supply voltage X to\
+            \ Y V’ 文字，supply_voltage_v 必须为 null；测试条件中的 VS = XX V 和绝对最大额定值表的电压均不得作为来源\n\
+            \n\n1. 只输出一个 JSON 对象，第一个字符必须是 {，最后一个字符必须是 }。禁止 markdown 代码块（json），禁止任何解释、前言、后缀文字。\n\
+            2. 16 个字段全部必须出现在输出里。datasheet 中找不到或不确定的字段填 null（对象和数组字段找不到也填 null），禁止省略任何\
+            \ key，禁止编造。\n3. 数字一律用 JSON Number 类型（写 40，不写 \"40\"）；区间一律用 [min, max]\
+            \ 数组。\n4. 只从提供的文本中抽取。禁止用你已有的知识、训练数据或芯片领域常识补全任何字段；文本里没有或不确定的信息一律 null。\n\
+            \ 4a. aec_q100_grade：仅当原文明确写出等级数字（如 \"Grade 1\"、\"Grade 3\"）才填对应数字；原文只写\
+            \ \"AEC-Q100 qualified\" 而未标注等级 → 填 null。注意：示例 2 的 grade=1 是因为其原文明确写了\
+            \ \"Grade 1\"，\"qualified\" 本身不含等级信息。\n 4b. supply_voltage_v：取电气特性表（Electrical\
+            \ characteristics）中 Supply voltage (Vs) 的工作范围 [min, max]；禁止使用绝对最大额定值表（Absolute\
+            \ maximum ratings）中的电压值。\n 4c. thd_n_percent：datasheet 中 \"Distortion\"\
+            （符号 D，单位 %）的典型值映射到此字段；原文未给则 null。\n4d. channels：统计的是输出通道数——数输出引脚（OUT LF/RF/LR/RR、OUT\
+            \ L2/R2 这类输出脚）；\n    输入配置（如 \"4 x QD\"）描述的是输入端，严禁计入 channels。\n4e2. audio_input：原文列出多种输入配置组合时，把列出的都放进数组；只出现一种填一种。\n\
+            4f. manufacturer：仅当文本中出现厂商名称（如 STMicroelectronics / NXP / TI）才填，否则 null。\n\
+            4g. package：仅当文本明确写出封装名（如 TSSOP28、SOIC-28；可能出现在 Pin description 标题\n \
+            \   或 Order codes 表中）才填，否则 null。\n规则2补充：output_power 整体找不到时整个对象填 null（不要造\
+            \ {\"per_channel_w\":null,\"load_ohm\":null}）；\n    任何字段禁止使用 -1 之类占位数值，找不到就是\
+            \ null。\n4h. control_interface：只填真正的通信/控制接口（I2C / SPI / I2S 等总线名称）；ST-BY、MUTE、enable\
+            \ 等是引脚或功能，严禁计入。原文无任何总线名称 → null。\n\n5. 单位规范化：电压 V、功率 W（每通道）、温度 °C、THD+N\
+            \ 用百分数数值（0.02 表示 0.02%）。\n6. 输出功率对象中，per_channel_w 取典型连续输出功率（非 Max/Peak\
+            \ 值），load_ohm 取对应负载阻抗。\n7. extraction_notes 用一句话说明主要信息来源章节；若整段文本无相关信息，所有字段除\
+            \ part_number 外全填 null，extraction_notes 写 \"no evidence found\"。extraction_notes\
+            \ 必须如实列出所给文本中实际出现的章节标记（如 === PIN DESCRIPTION ===、=== ELECTRICAL SPECIFICATIONS\
+            \ ===），禁止漏报或虚报章节。章节漏报或虚报，视同违反最高优先级规则 0，整体输出无效。\n\n字段定义（16 个）\npart_number(string)\
+            \ | manufacturer(string) | amplifier_class(string, \"AB\"或\"D\") | channels(Number)\
+            \ | output_power(object: {per_channel_w: Number, load_ohm: Number}) |\
+            \ supply_voltage_v(array[min,max]) | thd_n_percent(Number) | operating_temperature_c(array[min,max])\
+            \ | control_interface(array[string]) | audio_input(array[string]) | package(string)\
+            \ | aec_q100_grade(Number|null) | diagnostics(array[string]) | key_features(array[string])\
+            \ | applications(array[string]) | extraction_notes(string)\n示例 1\n输入文本片段：\n\
+            \"The TDA7850 is a MOSFET technology class AB audio power amplifier in\
+            \ Flexiwatt25 package designed for high-end car radio applications. Four\
+            \ channels, max output power 4 x 48 W / 4 ohm. Output power 4 x 40 W /\
+            \ 4 ohm @ 14.4 V, 1 kHz. Operating supply voltage 8 to 18 V. Junction\
+            \ temperature -55 to 150 °C. THD+N = 0.02 % @ 1 kHz, 14.4 V, 1 W, 4 ohm.\
+            \ I2C diagnostics interface for fault detection: clipping, diagnostic\
+            \ output.\"\n期望输出：\n{\"part_number\":\"TDA7850\",\"manufacturer\":\"STMicroelectronics\"\
+            ,\"amplifier_class\":\"AB\",\"channels\":4,\"output_power\":{\"per_channel_w\"\
+            :40,\"load_ohm\":4},\"supply_voltage_v\":[8,18],\"thd_n_percent\":0.02,\"\
+            operating_temperature_c\":[-55,150],\"control_interface\":[\"I2C\"],\"\
+            audio_input\":[\"analog\"],\"package\":\"Flexiwatt25\",\"aec_q100_grade\"\
+            :null,\"diagnostics\":[\"clipping detection\",\"fault diagnostic output\"\
+            ],\"key_features\":[\"MOSFET output stage\",\"4 channels bridgeable\"\
+            ],\"applications\":[\"car radio amplification\"],\"extraction_notes\"\
+            :\"General Description 与 Electrical Characteristics 章节\"}\n示例 2\n输入文本片段：\n\
+            \"TAS6424-Q1 is a 4-channel Class-D automotive audio amplifier with integrated\
+            \ DSP and digital audio input (I2S, TDM). AEC-Q100 Grade 1 qualified,\
+            \ operating ambient temperature -40 °C to 125 °C. Supports 4 x 23 W into\
+            \ 4 ohm at 14.4 V. Power supply VS 4.5 V to 18 V. THD+N 0.02 % typical.\
+            \ Control via I2C interface up to 1 MHz, 40-pin QFN package. Speaker diagnostics:\
+            \ DC load detection, fault reporting.\"\n期望输出：\n{\"part_number\":\"TAS6424-Q1\"\
+            ,\"manufacturer\":\"Texas Instruments\",\"amplifier_class\":\"D\",\"channels\"\
+            :4,\"output_power\":{\"per_channel_w\":23,\"load_ohm\":4},\"supply_voltage_v\"\
+            :[4.5,18],\"thd_n_percent\":0.02,\"operating_temperature_c\":[-40,125],\"\
+            control_interface\":[\"I2C\"],\"audio_input\":[\"I2S\",\"TDM\"],\"package\"\
+            :\"QFN-40\",\"aec_q100_grade\":1,\"diagnostics\":[\"DC load detection\"\
+            ,\"fault reporting\"],\"key_features\":[\"integrated DSP\",\"digital audio\
+            \ input\"],\"applications\":[\"automotive audio amplification\"],\"extraction_notes\"\
+            :\"Features 与 Electrical Characteristics 章节\"}\n实际抽取\n现在抽取型号为{{#1795089416887.part_number#}}的芯片。datasheet\
+            \ 文本如下：\n{{#1795089504376.selected_text#}}\n\n【输出前自查 —— 逐条检查，任何一条不过必须修正后再输出】\n\
+            □ aec_q100_grade：原文中有字面 \"Grade 1/2/3\" 吗？没有 → 必须是 null\n□ manufacturer：这个厂商名是原文字符串吗？在\
+            \ selected_text 里能逐字找到吗？\n  找不到 → 必须是 null（禁止写出知识里的厂商名）\n□ package：这个封装名是原文字符串吗？找不到\
+            \ → 必须是 null\n□ channels：=== PIN DESCRIPTION === 段存在吗？存在 → 数出名称以 OUT 开头的\n\
+            \  引脚个数填入，禁止 null；把每个 OUT 引脚名默数一遍\n□ extraction_notes：所给文本里出现了哪些 === 标记？逐个列出，一个都不能少\n\
+            □ output_power：找不到就是整个 null，绝不能是 -1 或空壳对象\n□ supply_voltage_v：数值来自 Electrical\
+            \ characteristics 表或 Description 文字吗？\n  来自 Absolute maximum ratings →\
+            \ 必须重取\n\n\n只输出 JSON 对象本身。"
+        selected: false
+        title: LLM
+        type: llm
+        vision:
+          enabled: false
+      height: 87
+      id: '1795089927128'
+      position:
+        x: 396.34727545150895
+        y: -95.3792624810479
+      positionAbsolute:
+        x: 396.34727545150895
+        y: -95.3792624810479
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        code: "import json, re\n\nREQUIRED = [\"part_number\",\"manufacturer\",\"\
+          amplifier_class\",\"channels\",\"output_power\",\n            \"supply_voltage_v\"\
+          ,\"thd_n_percent\",\"operating_temperature_c\",\"control_interface\",\n\
+          \            \"audio_input\",\"package\",\"aec_q100_grade\",\"diagnostics\"\
+          ,\"key_features\",\n            \"applications\",\"extraction_notes\"]\n\
+          NUMERIC_TOP = [\"channels\",\"thd_n_percent\",\"aec_q100_grade\"]\n\ndef\
+          \ main(llm_output: str, part_number: str) -> dict:\n    raw = (llm_output\
+          \ or \"\").strip()\n\n    # 弯引号归一化\n    raw = raw.replace(\"\\u201c\", '\"\
+          ').replace(\"\\u201d\", '\"')\n    raw = raw.replace(\"\\u2018\", \"'\"\
+          ).replace(\"\\u2019\", \"'\")\n\n    def fail(reason):\n        record =\
+          \ {\"status\": \"extraction_failed\", \"reason\": reason,\n            \
+          \      \"part_number\": part_number, \"needs_human_review\": True,\n   \
+          \               \"extraction\": None, \"llm_raw_excerpt\": raw[:300]}\n\
+          \        return {\"record\": json.dumps(record, ensure_ascii=False),\n \
+          \               \"status\": \"extraction_failed\", \"reason\": reason,\n\
+          \                \"part_number\": part_number}\n\n    # 提取 JSON\n    m =\
+          \ re.search(r'\\{.*\\}', raw, re.DOTALL)\n    if not m:\n        return\
+          \ fail(\"no_json_object\")\n    candidate = m.group(0)\n\n    try:\n   \
+          \     data = json.loads(candidate)\n    except json.JSONDecodeError:\n \
+          \       fixed = candidate.replace(\"'\", '\"')\n        fixed = re.sub(r',\\\
+          s*([}\\]])', r'\\1', fixed)\n        try:\n            data = json.loads(fixed)\n\
+          \        except json.JSONDecodeError as e:\n            return fail(f\"\
+          json_parse_error: {e}\")\n\n    if not isinstance(data, dict):\n       \
+          \ return fail(\"not_a_json_object\")\n\n    # 数字字符串强转（顶层标量）\n    for f in\
+          \ NUMERIC_TOP:\n        v = data.get(f)\n        if isinstance(v, str):\n\
+          \            try:\n                fv = float(v)\n                data[f]\
+          \ = int(fv) if fv == int(fv) else fv\n            except ValueError:\n \
+          \               data[f] = None\n\n    # 嵌套对象 output_power\n    op = data.get(\"\
+          output_power\")\n    if isinstance(op, dict):\n        for k in (\"per_channel_w\"\
+          , \"load_ohm\"):\n            v = op.get(k)\n            if isinstance(v,\
+          \ str):\n                try:\n                    fv = float(v)\n     \
+          \               op[k] = int(fv) if fv == int(fv) else fv\n             \
+          \   except ValueError:\n                    op[k] = None\n\n    # 区间数组 [min,\
+          \ max]\n    for arr in (\"supply_voltage_v\", \"operating_temperature_c\"\
+          ):\n        v = data.get(arr)\n        if isinstance(v, list):\n       \
+          \     nums = []\n            for item in v:\n                if isinstance(item,\
+          \ (int, float)):\n                    nums.append(item)\n              \
+          \  elif isinstance(item, str):\n                    try: nums.append(float(item))\n\
+          \                    except ValueError: nums.append(None)\n            \
+          \    else:\n                    nums.append(None)\n            data[arr]\
+          \ = nums if len(nums) == 2 else None\n\n    # 16 字段补 null + 高 null 率告警\n\
+          \    missing = [f for f in REQUIRED if f not in data]\n    for f in missing:\n\
+          \        data[f] = None\n\n    null_count = sum(1 for f in REQUIRED if data.get(f)\
+          \ is None)\n    status, reason = \"success\", \"\"\n    if null_count >=\
+          \ 12:\n        status = \"warn\"\n        reason = f\"high_null_rate_{null_count}_of_16\"\
+          \n    elif missing:\n        reason = \"filled_missing:\" + \",\".join(missing)\n\
+          \n    # 统一记录组装（成功/告警/失败同形态）\n    record = {\"status\": status, \"reason\"\
+          : reason, \"part_number\": part_number,\n              \"needs_human_review\"\
+          : status == \"warn\", \"extraction\": data}\n\n    return {\"record\": json.dumps(record,\
+          \ ensure_ascii=False),\n            \"status\": status, \"reason\": reason,\
+          \ \"part_number\": part_number}\n"
+        code_language: python3
+        outputs:
+          part_number:
+            children: null
+            type: string
+          reason:
+            children: null
+            type: string
+          record:
+            children: null
+            type: string
+          status:
+            children: null
+            type: string
+        selected: false
+        title: Code②
+        type: code
+        variables:
+        - value_selector:
+          - '1795089927128'
+          - text
+          value_type: string
+          variable: llm_output
+        - value_selector:
+          - '1795089416887'
+          - part_number
+          value_type: string
+          variable: part_number
+      height: 51
+      id: '1795121751944'
+      position:
+        x: 683.6653768660142
+        y: 334.78031643091583
+      positionAbsolute:
+        x: 683.6653768660142
+        y: 334.78031643091583
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        outputs:
+        - value_selector:
+          - '1795221206927'
+          - markdown_output
+          value_type: string
+          variable: visual_result
+        selected: false
+        title: 输出
+        type: end
+      height: 88
+      id: '1795123274220'
+      position:
+        x: 993.5843450797015
+        y: 205.79225725150985
+      positionAbsolute:
+        x: 993.5843450797015
+        y: 205.79225725150985
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    - data:
+        code: "import json\n\n# 参数名必须是 record_str\ndef main(record_str: str) -> dict:\n\
+          \    try:\n        data = json.loads(record_str)\n    except Exception as\
+          \ e:\n        return {\"markdown_output\": f\"❌ **JSON解析失败**: {str(e)}\\\
+          n\\n```json\\n{record_str}\\n```\"}\n\n    status = data.get(\"status\"\
+          , \"unknown\")\n    part_number = data.get(\"part_number\", \"未知型号\")\n\
+          \    extraction = data.get(\"extraction\", {})\n    \n    if status == \"\
+          success\":\n        md = f\"## ✅ 提取成功: {part_number}\\n\\n\"\n    elif status\
+          \ == \"warn\":\n        md = f\"## ⚠️ 提取告警: {part_number}\\n> {data.get('reason',\
+          \ '')}\\n\\n\"\n    else:\n        md = f\"## ❌ 提取失败: {part_number}\\n>\
+          \ {data.get('reason', '')}\\n\\n\"\n        md += f\"```json\\n{json.dumps(extraction,\
+          \ indent=2, ensure_ascii=False) if extraction else '无提取数据'}\\n```\"\n  \
+          \      return {\"markdown_output\": md}\n\n    md += \"| 属性字段 | 提取值 |\\\
+          n| :--- | :--- |\\n\"\n    zh_map = {\n        \"manufacturer\": \"制造商\"\
+          , \"amplifier_class\": \"功放类别\",\n        \"channels\": \"声道数\", \"output_power\"\
+          : \"输出功率\",\n        \"supply_voltage_v\": \"供电电压(V)\", \"thd_n_percent\"\
+          : \"失真度(%)\",\n        \"operating_temperature_c\": \"工作温度(℃)\", \"control_interface\"\
+          : \"控制接口\",\n        \"audio_input\": \"音频输入\", \"package\": \"封装\", \"\
+          aec_q100_grade\": \"车规等级\",\n        \"diagnostics\": \"诊断功能\", \"key_features\"\
+          : \"核心特性\", \"applications\": \"应用场景\"\n    }\n\n    for k, v in extraction.items():\n\
+          \        display_key = zh_map.get(k, k)\n        if isinstance(v, (dict,\
+          \ list)):\n            val_str = json.dumps(v, ensure_ascii=False)\n   \
+          \     elif v is None or v == \"\":\n            val_str = \"❌ *未提取到*\"\n\
+          \        else:\n            val_str = str(v)\n        md += f\"| **{display_key}**\
+          \ | {val_str} |\\n\"\n\n    # 返回字典的键名必须是 markdown_output\n    return {\"\
+          markdown_output\": md}"
+        code_language: python3
+        outputs:
+          markdown_output:
+            children: null
+            type: string
+        selected: false
+        title: JSON转可视化图表
+        type: code
+        variables:
+        - value_selector:
+          - '1795121751944'
+          - record
+          value_type: string
+          variable: record_str
+      height: 51
+      id: '1795221206927'
+      position:
+        x: 714.352111460653
+        y: -95.3792624810479
+      positionAbsolute:
+        x: 714.352111460653
+        y: -95.3792624810479
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 242
+    viewport:
+      x: 127.46204196730679
+      y: 277.8364860252388
+      zoom: 0.659753955386447
+  rag_pipeline_variables: []

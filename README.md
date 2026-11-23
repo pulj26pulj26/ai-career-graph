@@ -30,6 +30,17 @@ flowchart LR
 控制面（腾讯云 Lighthouse / Dify）与数据面（AutoDL / Ollama）
 分离；LLM 为 Qwen2.5-7B-Instruct Q4_K_M，Embedding 为 bge-m3。
 
+
+## 核心应用证据 (Dify Apps)
+本项目不仅定义了图谱，还通过真实的 Dify 工作流跑通了业务闭环。以下应用导出了完整的 DSL 与架构决策文档：
+
+- **[AutoDS-ParamMiner](apps/autods-paramminer/)**：汽车音响芯片 Datasheet 参数抽取流水线。
+  - *能力映射*：`A1 任务编排` / `S1 RAG评估` / `Harness 层可靠性设计`
+  - *核心亮点*：双层代码节点解耦（正则清洗 + JSON 强校验防崩溃），Markdown 可视化渲染。
+- **[AI 职业图谱教练](apps/ai-career-coach/)**：
+  - *能力映射*：`A3 多 Agent 协作与协议设计`
+  - *核心亮点*：将本仓库的图谱概念具象化为可交互的教练 Agent。
+
 ## S1 · RAG 召回调优（核心证据）
 
 ![retrieval comparison](docs/assets/retrieval-comparison.png)
@@ -43,22 +54,26 @@ flowchart LR
 混合检索的关键词通道将 M1 的领先从 0.01 扩大到 0.06，使 M1 稳定排第一。
 完整调优记录见 [docs/s1-retrieval-tuning-log.md](docs/s1-retrieval-tuning-log.md)。
 
-## 图谱定义
+## 图谱定义与通关证据
 
-- [graph/nodes.yaml](graph/nodes.yaml) — 6 个节点（A1/A2/A3/S1/S2/S3）
-- [graph/edges.yaml](graph/edges.yaml) — 4 条迁移边（M1—M4）
-- [docs/graph.md](docs/graph.md) — Mermaid 可视化
-- 校验：`python scripts/validate.py`
+*（注：详细结构化数据见 [graph/nodes.yaml](graph/nodes.yaml) 和 [graph/edges.yaml](graph/edges.yaml)）*
+
+- [x] **A1 · Agent 任务编排与工具调用** ✅ [证据：AutoDS-ParamMiner](apps/autods-paramminer/)
+- [x] **S1 · RAG 与 LLM 应用评估** ✅ [证据：RAG 召回调优记录](#s1--rag-召回调优核心证据) + [AutoDS-ParamMiner](apps/autods-paramminer/)
+- [x] **A3 · 多 Agent 协作与协议设计** ✅ [证据：AI 职业图谱教练](apps/ai-career-coach/)
+- [ ] **A2 · Agent 可靠性设计与评估** (进行中... 已在 AutoDS-ParamMiner 的 Code② 中初步实践)
+- [ ] **S2 · 实验设计与因果推断**
+- [ ] **S3 · 面向业务决策的建模与沟通**
 
 ```mermaid
 flowchart TB
     subgraph A["A 线 · Agent 架构师"]
-        A1["A1 任务编排与工具调用"]
+        A1["A1 任务编排与工具调用 ✅"]
         A2["A2 可靠性设计与评估 ◆共享"]
-        A3["A3 多 Agent 协议设计（可选）"]
+        A3["A3 多 Agent 协议设计 ✅"]
     end
     subgraph S["S 线 · 数据科学家"]
-        S1["S1 RAG 与 LLM 应用评估 ◆共享"]
+        S1["S1 RAG 与 LLM 应用评估 ◆共享 ✅"]
         S2["S2 实验设计与因果推断"]
         S3["S3 业务决策建模与沟通"]
     end
@@ -95,7 +110,9 @@ flowchart TB
 - ✅ 图谱 MVP 定义 + 校验脚本
 - ✅ Dify + Ollama 跨云推理链路
 - ✅ S1 召回调优（纯向量 → 混合检索，区分度 0.01 → 0.06）
-- 🔄 A1 Agent 编排（进行中）
+- ✅ A1 Agent 编排（完成 AutoDS-ParamMiner 端到端闭环）
+- ✅ A3 图谱教练应用构建
+- 🔄 A2 可靠性设计（尝试将 AutoDS 的强校验模式抽象为通用 Agent 范式）
 
 ## 技术栈
 

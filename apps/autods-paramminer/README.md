@@ -1,5 +1,19 @@
 # AutoDS-ParamMiner: 汽车音响芯片 Datasheet 参数抽取流水线
 
+## 在线体验与复现
+
+- **[打开 AutoDS-ParamMiner 在线应用](http://111.230.145.223/workflow/Iyo0UvCF8ckFGPTT)**
+- [查看 Dify DSL 工作流文件](workflow.yml)
+
+### 在 Dify 中复现
+
+1. 下载本目录的 `workflow.yml`。
+2. 在 Dify 工作室中选择“导入 DSL 文件”。
+3. 重新配置模型供应商及必要的访问凭据。
+4. 发布应用，并上传汽车芯片 Datasheet，输入part_number 运行。
+
+> 在线应用用于演示参数抽取流程，请勿上传包含商业秘密或敏感信息的文档。
+
 ## 1. 业务背景与痛点
 汽车电子领域的芯片 Datasheet（数据手册）通常长达数十页，充满复杂的双栏排版与表格。传统人工提取关键参数（如输出电压、THD+N、封装等）耗时且易错。
 

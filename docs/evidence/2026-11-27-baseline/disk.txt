@@ -1,0 +1,11 @@
+Filesystem               Size  Used Avail Use% Mounted on
+overlay                   30G  185M   30G   1% /
+tmpfs                     64M     0   64M   0% /dev
+shm                      2.0G     0  2.0G   0% /dev/shm
+/dev/md0                  11T   11T  274G  98% /autodl-fs
+AutoFS:fscqasecond50456  200G  4.0K  200G   1% /autodl-fs/data
+AutoFS:fs1               4.0T  2.6T  1.5T  65% /autodl-pub/data
+tmpfs                    504G     0  504G   0% /proc/acpi
+tmpfs                    504G     0  504G   0% /proc/scsi
+tmpfs                    504G     0  504G   0% /sys/firmware
+tmpfs                    504G     0  504G   0% /sys/devices/virtual/powercap

@@ -33,3 +33,9 @@ Project: AI Career Graph Reliability Lab
 2. 没有原始证据的能力，不进入简历。
 3. 负向结果和失败样本必须保留。
 4. 每次状态升级必须附带证据路径和提交哈希。
+
+## Ollama 远端依赖
+- ollama 部署在另一台服务器（<主机标识>），不在本容器内
+- 版本与模型清单见 ollama-tags.json / ollama-version.json
+- 复现时需保证远端模型与清单一致
+- 注：初次冻结时 ollama-models.txt / ollama-tags.json 为空文件，系采集脚本未考虑远端部署所致，已修正
